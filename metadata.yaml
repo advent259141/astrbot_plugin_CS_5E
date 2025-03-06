@@ -1,6 +1,6 @@
 name: astrbot_plugin_CS_5E # 这是你的插件的唯一识别名。
 desc: 基于5E赛事数据中心的CS赛事数据查询插件，菜单为/5e_help。 # 插件简短描述
-help: 记得看帮助安装相关以来。 # 插件的帮助信息
+help: 记得看帮助，安装相关依赖。 # 插件的帮助信息
 version: v1.0.0 # 插件版本号。格式：v1.1.1 或者 v1.1
 author: Jason # 作者
 repo: https://github.com/advent259141/astrbot_plugin_CS_5E # 插件的仓库地址
