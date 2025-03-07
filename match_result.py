@@ -720,12 +720,16 @@ class MatchResultFetcher:
         """处理比赛结果命令"""
         command = command.strip()
         
-        # 记录当前用户ID的处理请求
+        # 增加调试日志以追踪用户ID
         logger.info(f"处理命令 '{command}' 来自用户ID: {user_id}")
         
         # 处理"比赛结果"命令
         if command in ["比赛结果", "/比赛结果"]:
             try:
+                # 记录当前所有会话状态
+                logger.debug(f"当前活跃浏览器会话: {list(self.active_browsers.keys())}")
+                logger.debug(f"当前用户会话映射: {self.search_results}")
+                
                 # 获取比赛结果数据
                 logger.info("开始获取比赛结果数据")
                 
@@ -801,16 +805,34 @@ class MatchResultFetcher:
                 match_index = int(match_command.group(1))
                 
                 # 记录查询的会话情况
-                logger.info(f"用户 {user_id} 请求查看比赛 #{match_index}, 当前存储的会话IDs: {list(self.search_results.keys())}")
+                logger.info(f"用户 {user_id} 请求查看比赛 #{match_index}")
+                logger.info(f"当前存储的会话用户IDs: {list(self.search_results.keys())}")
+                logger.info(f"当前用户会话ID映射: {self.search_results}")
                 
                 # 检查用户是否有活跃的会话
                 if user_id not in self.search_results or user_id not in self.search_timestamps:
-                    logger.warning(f"用户 {user_id} 没有活跃会话，现有会话IDs: {list(self.search_results.keys())}")
-                    return {
-                        "success": False,
-                        "message": "请先使用'比赛结果'命令查询最近的比赛",
-                        "type": "match_detail_no_session"
-                    }
+                    logger.warning(f"用户 {user_id} 没有活跃会话")
+                    
+                    # 尝试查看是否有可用的浏览器会话，如果有则为此用户创建
+                    if self.active_browsers:
+                        # 找到最新的会话
+                        newest_session_id = sorted(
+                            self.active_browsers.keys(),
+                            key=lambda sid: self.active_browsers[sid]['timestamp'],
+                            reverse=True
+                        )[0]
+                        
+                        logger.info(f"为用户 {user_id} 分配现有会话: {newest_session_id}")
+                        self.search_results[user_id] = newest_session_id
+                        self.search_timestamps[user_id] = time.time()
+                        
+                        # 继续处理请求...
+                    else:
+                        return {
+                            "success": False,
+                            "message": "请先使用'比赛结果'命令查询最近的比赛",
+                            "type": "match_detail_no_session"
+                        }
                 
                 # 检查会话是否过期
                 elapsed = time.time() - self.search_timestamps[user_id]

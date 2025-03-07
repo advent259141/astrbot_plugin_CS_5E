@@ -220,14 +220,14 @@ class FiveEPlayerQuery(Star):
         """处理比赛结果查询命令"""
         self.logger.info(f"收到比赛结果查询命令")
         
-        # 使用相同的方法获取用户ID
-        # 确保这里和handle_match_detail使用完全相同的用户ID
-        user_id = str(event.get_session_id())
+        # 修改获取用户ID的方式，使用get_sender_id()方法
+        user_id = str(event.get_sender_id())
+        self.logger.debug(f"使用get_sender_id()获取用户ID: {user_id}")
         
         try:
             yield event.plain_result("📊 正在获取最近的比赛结果，请稍候...")
             
-            # 修改这里，传递user_id给process_command
+            # 传递user_id给process_command
             result = await self.result_fetcher.process_command("比赛结果", user_id)
             
             if result["success"]:
@@ -243,9 +243,9 @@ class FiveEPlayerQuery(Star):
     @filter.regex(r"^比赛\d+$")
     async def handle_match_detail(self, event: AstrMessageEvent):
         """处理比赛详情命令"""
-        # 使用相同的用户ID获取方法
+        # 修改获取用户ID的方式，使用get_sender_id()方法
         message = event.message_obj.message_str.strip()
-        user_id = str(event.get_session_id())
+        user_id = str(event.get_sender_id())
         
         self.logger.info(f"收到比赛详情命令: {message}, 用户ID: {user_id}")
         
@@ -305,7 +305,7 @@ class FiveEPlayerQuery(Star):
         """处理消息事件"""
         # 统一获取用户ID的方式
         message = event.message_obj.message_str.strip()
-        user_id = str(event.get_session_id())
+        user_id = str(event.get_sender_id())  # 使用get_sender_id()方法
         
         # 如果是帮助命令
         if message.lower() in ("5e帮助", "team_help", "战队帮助"):
